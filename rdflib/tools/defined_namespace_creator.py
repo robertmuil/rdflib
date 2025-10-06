@@ -89,11 +89,11 @@ def get_target_namespace_elements(
 
         # Get all definitions for this subject
         defs: list[str] = []
-        for def_p in [DCTERMS.description, RDFS.comment, SKOS.definition]:
+        for def_p in [RDFS.label, DCTERMS.description, RDFS.comment, SKOS.definition]:
             defs.extend(str(def_o) for def_o in g.objects(s, def_p))
 
         # Join multiple definitions with space
-        def_str = " ".join(defs) if defs else ""
+        def_str = " | ".join(defs) if defs else ""
         elements.append((str(s), def_str))
 
     elements.sort(key=lambda tup: tup[0])
