@@ -129,7 +129,7 @@ class {object_id}(DefinedNamespace):
     DESCRIPTION_EDIT_ME_!
 
     Generated from: SOURCE_RDF_FILE_EDIT_ME_!
-    Date: {datetime.datetime.utcnow()}
+    Date: {datetime.datetime.now(tz=datetime.timezone.utc)}
     """
 '''
     with open(output_file_name, "w") as f:
