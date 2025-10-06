@@ -18,14 +18,10 @@ import datetime
 import keyword
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from rdflib.graph import Graph
-from rdflib.namespace import DCTERMS, OWL, RDFS, SKOS
+from rdflib.graph import Graph, URIRef
+from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, SKOS
 from rdflib.util import guess_format
-
-if TYPE_CHECKING:
-    from rdflib.query import ResultRow
 
 
 def validate_namespace(namespace: str) -> None:
@@ -73,33 +69,32 @@ def validate_object_id(object_id: str) -> None:
 
 
 def get_target_namespace_elements(
-    g: Graph, target_namespace: str
+    g: Graph,
+    target_namespace: str,
 ) -> tuple[list[tuple[str, str]], list[str], list[str]]:
-    namespaces = {"dcterms": DCTERMS, "owl": OWL, "rdfs": RDFS, "skos": SKOS}
-    q = """
-        SELECT ?s (GROUP_CONCAT(DISTINCT STR(?def)) AS ?defs)
-        WHERE {
-            # all things in the RDF data (anything RDF.type...)
-            ?s a ?o .
-
-            # get any definitions, if they have one
-            OPTIONAL {
-                ?s dcterms:description|rdfs:comment|skos:definition ?def
-            }
-
-            # only get results for the target namespace (supplied by user)
-            FILTER STRSTARTS(STR(?s), "xxx")
-            FILTER (STR(?s) != "xxx")
-        }
-        GROUP BY ?s
-        """.replace(
-        "xxx", target_namespace
-    )
+    # Find all subjects that have a rdf:type property
     elements: list[tuple[str, str]] = []
-    for r in g.query(q, initNs=namespaces):
-        if TYPE_CHECKING:
-            assert isinstance(r, ResultRow)
-        elements.append((str(r[0]), str(r[1])))
+
+    for s, _p, _o in g.triples((None, RDF.type, None)):
+        if not isinstance(s, URIRef):
+            continue
+
+        # Check if subject is in target namespace
+        if not s.startswith(target_namespace) or str(s) == target_namespace:
+            continue
+
+        # Skip an ontology definition itself (TODO: use to define the namespace)
+        if (s, RDF.type, OWL.Ontology) in g:
+            continue
+
+        # Get all definitions for this subject
+        defs: list[str] = []
+        for def_p in [DCTERMS.description, RDFS.comment, SKOS.definition]:
+            defs.extend(str(def_o) for def_o in g.objects(s, def_p))
+
+        # Join multiple definitions with space
+        def_str = " ".join(defs) if defs else ""
+        elements.append((str(s), def_str))
 
     elements.sort(key=lambda tup: tup[0])
 
