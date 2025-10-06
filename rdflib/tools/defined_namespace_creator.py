@@ -124,7 +124,8 @@ def make_dn_file(
     object_id: str,
     fail: bool,
 ) -> None:
-    header = f'''from rdflib.namespace import DefinedNamespace, Namespace
+    header = f'''# ruff: noqa: N815
+from rdflib.namespace import DefinedNamespace, Namespace
 from rdflib.term import URIRef
 
 
@@ -210,8 +211,10 @@ if __name__ == "__main__":
 
     print("Getting all namespace elements...")
     elements = get_target_namespace_elements(g, args.target_namespace)
+    print(f"Got {len(elements[0])} elements in '{args.target_namespace}...'")
 
-    output_file_name = Path().cwd() / f"_{args.object_id}.py"
+    input_folder = Path(args.ontology_file).parent
+    output_file_name = input_folder / f"{args.object_id}.py"
     print(f"Creating DefinedNamespace Python file {output_file_name}")
     make_dn_file(
         output_file_name,

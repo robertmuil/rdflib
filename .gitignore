@@ -180,3 +180,4 @@ cython_debug/
 
 # VS Code - for now just ignore so non-vscode-user repos are not polluted.
 .vscode/settings.json
+.vscode/launch.json
