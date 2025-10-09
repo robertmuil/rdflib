@@ -118,6 +118,8 @@ def make_dn_file(
     non_python_elements_strs: list[str],
     object_id: str,
     fail: bool,
+    source_rdf_file: str,
+    ontology_description: str = "DESCRIPTION_EDIT_ME_!",
 ) -> None:
     header = f'''# ruff: noqa: N815
 from rdflib.namespace import DefinedNamespace, Namespace
@@ -125,10 +127,11 @@ from rdflib.term import URIRef
 
 
 class {object_id}(DefinedNamespace):
-    """
-    DESCRIPTION_EDIT_ME_!
+    """Python representation of the {object_id} ontology.
 
-    Generated from: SOURCE_RDF_FILE_EDIT_ME_!
+    {ontology_description}
+
+    Generated from: {source_rdf_file}
     Date: {datetime.datetime.now(tz=datetime.timezone.utc)}
     """
 '''
@@ -192,7 +195,9 @@ if __name__ == "__main__":
     if fmt is None:
         print("The format of the file you've supplied is unknown.")
         exit(1)
-    g = Graph().parse(args.ontology_file, format=fmt)
+
+    input_path = Path(args.ontology_file)
+    g = Graph().parse(input_path, format=fmt)
 
     validate_namespace(args.target_namespace)
 
@@ -208,8 +213,7 @@ if __name__ == "__main__":
     elements = get_target_namespace_elements(g, args.target_namespace)
     print(f"Got {len(elements[0])} elements in '{args.target_namespace}...'")
 
-    input_folder = Path(args.ontology_file).parent
-    output_file_name = input_folder / f"{args.object_id}.py"
+    output_file_name = input_path.parent / f"{args.object_id}.py"
     print(f"Creating DefinedNamespace Python file {output_file_name}")
     make_dn_file(
         output_file_name,
@@ -218,4 +222,5 @@ if __name__ == "__main__":
         elements[2],
         args.object_id,
         args.fail,
+        str(input_path.absolute()),
     )
