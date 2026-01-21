@@ -1312,6 +1312,7 @@ dev = [
     { name = "black" },
     { name = "lxml-stubs" },
     { name = "mypy" },
+    { name = "pip" },
     { name = "pip-tools" },
 ]
 docs = [
@@ -1352,6 +1353,7 @@ dev = [
     { name = "black", specifier = "==24.10.0" },
     { name = "lxml-stubs", specifier = ">=0.4,<0.6" },
     { name = "mypy", specifier = ">=1.18.2,<2" },
+    { name = "pip", specifier = ">=25.2" },
     { name = "pip-tools", specifier = ">=7.5.0,<8" },
 ]
 docs = [
